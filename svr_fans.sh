@@ -1,28 +1,54 @@
 #!/bin/bash
 
-# Requires NetCat to be installed.
+# Requires NetCat and IPMITool to be installed.
 
+# Set Server Arrays
+declare -a ServerIPArray; ServerIPArray=('192.168.1.250' '192.168.1.251' '192.168.1.252')
+declare -a ServerNameArray; ServerNameArray=('MasterServer' 'VMServer' 'BackupServer')
+declare -a ServerUserArray; ServerUserArray=('root' 'root' 'root')
+declare -a ServerPassArray; ServerPassArray=('14151415' '14151415' '14151415')
 
-# Set UserName & Password
-user="root"
-pass="14151415"
+usage_example() {
+  echo 'Usage: ./svr_fans.sh <h> ##'
+  echo
+  echo '    ##          FanSpeed Percentage (Required)'
+  echo '                (Number between 20 and 100)'
+  echo
+  echo '    -h or h     Show this usage and exit.'
+  echo
+}
 
-# Set Server Name & IP Arrays
-declare -a ServerIPArray
-ServerNameArray=('MasterServer' 'VMServer' 'BackupServer')
-ServerIPArray=('192.168.1.250' '192.168.1.251' '192.168.1.252')
+echo '=============================='
+echo ' PowerEdge Server Fan Control'
+echo '=============================='
+echo
 
-# Set FanSpeed String
-#     20% raw 0x30 0x30 0x02 0xff 0x14
-#     30% raw 0x30 0x30 0x02 0xff 0x1E
-#     40% raw 0x30 0x30 0x02 0xff 0x28
-FanSpeed='raw 0x30 0x30 0x02 0xff 0x28'
+# Check for Usage flag
+if ([ "$1" = "-h" ] || [ "$1" = "h" ]); then
+  usage_example
+  exit 0
+fi
 
-echo "===================="
-echo " Server Fan Control"
-echo "===================="
-echo ""
+# Check for valid FanSpeed variable
+case "$1" in
+    ("" | *[!0-9]*)
+        echo 'Invalid FanSpeed Variable.'
+	echo
+	usage_example
+        exit 1
+esac
+if [ "$1" -lt 20 ] || [ "$1" -gt 100 ]; then
+    echo 'FanSpeed Variable Out of Range.'
+    echo
+    usage_example
+    exit 1
+fi
 
+# Set FanControl & FanSpeed Strings
+FanControl='raw 0x30 0x30 0x01 0x00'
+FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $1 )
+
+# Do it!
 for keys in "${!ServerNameArray[@]}"
     do
         echo "Checking for ${ServerNameArray[$keys]}"
@@ -31,14 +57,14 @@ for keys in "${!ServerNameArray[@]}"
             echo " ✓ ${ServerNameArray[$keys]} Found"
             echo ""
             echo " Requesting ${ServerNameArray[$keys]} Fan Control..."
-            if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U $user -P $pass raw 0x30 0x30 0x01 0x00; then
+            if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanControl; then
                 echo " ✓ Control Granted"
                 echo ""
-                echo " Requesting Fans Set to 40%..."
-                if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U $user -P $pass $FanSpeed; then
-                    echo " ✓ Fans Set to 40%"
+                echo " Requesting Fans Set to "$1"%..."
+                if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanSpeed; then
+                    echo " ✓ Fans Set to "$1"%"
                 else
-                    echo " ✗ Setting Fans to 40% Failed"
+                    echo " ✗ Setting Fans to "$1"% Failed"
                 fi
             else
                 echo " ✗ Fan Control Denied"
@@ -46,12 +72,12 @@ for keys in "${!ServerNameArray[@]}"
         else
             echo " ✗ ${ServerNameArray[$keys]} Not Found"
         fi
-        echo ""
+        echo
    done
 
-echo ""
-echo "============================="
-echo " Server Fan Control Complete"
-echo "============================="
-echo ""
+echo
+echo '======================================='
+echo ' PowerEdge Server Fan Control Complete'
+echo '======================================='
+echo
 exit 0
