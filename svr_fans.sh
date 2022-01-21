@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="1.8"
+VER="1.9"
 
 # Requires Curl, NetCat, and IPMITool.
 declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool')
@@ -80,9 +80,11 @@ usage_example() {
 }
 
 # Execute Script
-echo '=============================='
-echo ' PowerEdge Server Fan Control'
-echo '=============================='
+clear
+echo '=========================================='
+echo ' Dell PowerEdge R720xd Server Fan Control'
+echo '   v$VER by DocDrydenn'
+echo '=========================================='
 echo
 
 # Package Check
