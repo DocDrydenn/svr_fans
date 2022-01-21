@@ -38,6 +38,7 @@ self_update() {
     git checkout $BRANCH --quiet
     git pull --force --quiet
     echo "  ✓ Update Complete. Running New Version..."
+    sleep 3
     cd - > /dev/null                        # return to original working dir
     exec "$SCRIPTNAME" "${ARGS[@]}"
 
