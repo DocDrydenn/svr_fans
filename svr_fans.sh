@@ -119,11 +119,7 @@ echo
 self_update
 echo
 
-# Set FanControl & FanSpeed Strings
-FanControl='raw 0x30 0x30 0x01 0x00'
-FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $1 )
-
-# Do it!
+# Let's Do It!
 echo "3. Fan Control:"
 for keys in "${!ServerNameArray[@]}"; do
   echo "  Checking for ${ServerNameArray[$keys]}"
@@ -149,8 +145,8 @@ for keys in "${!ServerNameArray[@]}"; do
   echo
 done
 
-echo '============================================'
-echo ' Dell PowerEdge R720xd Fan Control Complete'
-echo '============================================'
+echo "============================================"
+echo " Dell PowerEdge R720xd Server Fan Control"
+echo "============================================"
 echo
 exit 0
