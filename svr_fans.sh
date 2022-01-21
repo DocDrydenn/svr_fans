@@ -60,11 +60,12 @@ packages() {
       echo "  ✓ $REQUIRED_PKG: Found."
     fi
   done
-  if [ "" != "$install_pkgs" ]; then
+  if [ " " != "$install_pkgs" ]; then
   echo
   echo "1a. Installing Missing Packages:"
   apt --dry-run install $install_pkgs #debug
   #apt install -y $install_pkgs
+  fi
 }
 
 # Usage Example Function
