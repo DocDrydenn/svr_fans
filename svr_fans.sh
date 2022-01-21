@@ -16,9 +16,10 @@ SCRIPTFILE="$(basename "$SCRIPT")"             # get name of the file (not full 
 SCRIPTPATH="$(dirname "$SCRIPT")"
 SCRIPTNAME="$0"
 ARGS=( "$@" )                                  # fixed to make array of args (see below)
-BRANCH="master"
+BRANCH="main"
 
 self_update() {
+  echo "Checking for Online Updates..."
   cd "$SCRIPTPATH"
   git fetch
                                                #https://github.com/DocDrydenn/srv_fans/releases/latest"
@@ -75,7 +76,7 @@ echo
 
 # Package Check
 packages
-echo $install_pkgs
+self_update
 
 exit 0
 
