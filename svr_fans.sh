@@ -1,15 +1,15 @@
 #!/bin/bash
 
-VER="1.9"
+VER="2.0"
 
 # Requires Curl, NetCat, and IPMITool.
 declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool')
 
 # Set Server Arrays
-declare -a ServerIPArray; ServerIPArray=('192.168.1.250' '192.168.1.251' '192.168.1.252')
-declare -a ServerNameArray; ServerNameArray=('MasterServer' 'VMServer' 'BackupServer')
-declare -a ServerUserArray; ServerUserArray=('root' 'root' 'root')
-declare -a ServerPassArray; ServerPassArray=('14151415' '14151415' '14151415')
+ServerIPArray=()
+ServerNameArray=()
+ServerUserArray=()
+ServerPassArray=()
 
 # Set FanControl & FanSpeed Strings
 FanControl='raw 0x30 0x30 0x01 0x00'
@@ -118,6 +118,9 @@ packages
 echo
 self_update
 echo
+
+# Load Arrays from CONF file
+{ read -a ServerIPArray; read -a ServerNameArray; read -a ServerUserArray; read -a ServerPassArray; } <$SCRIPTPATH/svr_fans.conf
 
 # Let's Do It!
 echo "3. Fan Control:"
