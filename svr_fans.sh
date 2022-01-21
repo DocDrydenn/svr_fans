@@ -19,7 +19,7 @@ ARGS=( "$@" )                                  # fixed to make array of args (se
 BRANCH="main"
 
 self_update() {
-  echo "Checking for Online Updates..."
+  echo "Script Updates:"
   [ "$UPDATE_GUARD" ] && return
   export UPDATE_GUARD=YES
 
@@ -28,7 +28,7 @@ self_update() {
 
   timeout 1s git diff --quiet --exit-code "origin/$BRANCH" "$SCRIPTFILE"
   [ $? -eq 1 ] && {
-    echo "Found a new version of me, updating myself..."
+    echo "  New version found. Updating..."
     if [ -n "$(git status --porcelain)" ];  # opposite is -z
     then
       git stash push -m 'local changes stashed before self update' --quiet
@@ -36,28 +36,28 @@ self_update() {
     git pull --force --quiet
     git checkout main --quiet
     git pull --force --quiet
-    echo "Running the new version..."
+    echo "  Update Complete. Running New Version..."
     cd - > /dev/null                        # return to original working dir
     exec "$SCRIPTNAME" "${ARGS[@]}"
 
     # Now exit this old instance
     exit 1
     }
-  echo "Already the latest version."
+  echo "  Already Latest Version. Continuing..."
 }
 
 # Package Check/Install Function
 packages() {
-  echo "Required Packages:"
+  echo "Requierd Packages:"
   install_pkgs=" "
   for keys in "${!PackagesArray[@]}"; do
     REQUIRED_PKG=${PackagesArray[$keys]}
     PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
     if [ "" = "$PKG_OK" ]; then
-      echo "Checking for $REQUIRED_PKG: Not Found."
+      echo "  ✗ $REQUIRED_PKG: Not Found."
       install_pkgs+=" $REQUIRED_PKG"
     else
-      echo "Checking for $REQUIRED_PKG: Found."
+      echo "  ✓ $REQUIRED_PKG: Found."
     fi
   done
   echo "Installing Missing Packages:"
