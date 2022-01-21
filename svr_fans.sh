@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="1.2"
+VER="1.3"
 
 # Requires Curl, NetCat, and IPMITool.
 declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool' 'mt-st')
