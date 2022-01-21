@@ -1,9 +1,9 @@
 #!/bin/bash
 
-VER="1.4"
+VER="1.8"
 
 # Requires Curl, NetCat, and IPMITool.
-declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool' 'mt-st')
+declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool')
 
 # Set Server Arrays
 declare -a ServerIPArray; ServerIPArray=('192.168.1.250' '192.168.1.251' '192.168.1.252')
@@ -12,14 +12,14 @@ declare -a ServerUserArray; ServerUserArray=('root' 'root' 'root')
 declare -a ServerPassArray; ServerPassArray=('14151415' '14151415' '14151415')
 
 SCRIPT="$(readlink -f "$0")"
-SCRIPTFILE="$(basename "$SCRIPT")"             # get name of the file (not full path)
+SCRIPTFILE="$(basename "$SCRIPT")"
 SCRIPTPATH="$(dirname "$SCRIPT")"
 SCRIPTNAME="$0"
-ARGS=( "$@" )                                  # fixed to make array of args (see below)
+ARGS=( "$@" )
 BRANCH="main"
 
 self_update() {
-  echo "Script Updates:"
+  echo "2. Script Updates:"
   [ "$UPDATE_GUARD" ] && return
   export UPDATE_GUARD=YES
 
@@ -28,7 +28,7 @@ self_update() {
 
   timeout 1s git diff --quiet --exit-code "origin/$BRANCH" "$SCRIPTFILE"
   [ $? -eq 1 ] && {
-    echo "  New version found. Updating..."
+    echo "  ✗ New version found. Updating..."
     if [ -n "$(git status --porcelain)" ];  # opposite is -z
     then
       git stash push -m 'local changes stashed before self update' --quiet
@@ -36,19 +36,19 @@ self_update() {
     git pull --force --quiet
     git checkout main --quiet
     git pull --force --quiet
-    echo "  Update Complete. Running New Version..."
+    echo "  ✓ Update Complete. Running New Version..."
     cd - > /dev/null                        # return to original working dir
     exec "$SCRIPTNAME" "${ARGS[@]}"
 
     # Now exit this old instance
     exit 1
     }
-  echo "  Already Latest Version. Continuing..."
+  echo "  ✓ Already Latest Version. Continuing..."
 }
 
 # Package Check/Install Function
 packages() {
-  echo "Requierd Packages:"
+  echo "1. Requierd Packages:"
   install_pkgs=" "
   for keys in "${!PackagesArray[@]}"; do
     REQUIRED_PKG=${PackagesArray[$keys]}
@@ -84,7 +84,9 @@ echo
 
 # Package Check
 packages
+echo
 self_update
+echo
 
 exit 0
 
