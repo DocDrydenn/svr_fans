@@ -1,19 +1,15 @@
 #!/bin/bash
 
-VER="2.0"
+VER="2.5"
 
 # Requires Curl, NetCat, and IPMITool.
-declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool')
+PackagesArray=('netcat' 'ipmitool')
 
 # Set Server Arrays
 ServerIPArray=()
 ServerNameArray=()
 ServerUserArray=()
 ServerPassArray=()
-
-# Set FanControl & FanSpeed Strings
-FanControl='raw 0x30 0x30 0x01 0x00'
-FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $1 )
 
 # Set Script Update Strings
 SCRIPT="$(readlink -f "$0")"
@@ -121,6 +117,10 @@ echo
 
 # Load Arrays from CONF file
 { read -a ServerIPArray; read -a ServerNameArray; read -a ServerUserArray; read -a ServerPassArray; } <$SCRIPTPATH/svr_fans.conf
+
+# Set FanControl & FanSpeed Strings
+FanControl='raw 0x30 0x30 0x01 0x00'
+FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $1 )
 
 # Let's Do It!
 echo "3. Fan Control:"
