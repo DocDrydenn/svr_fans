@@ -20,8 +20,6 @@ BRANCH="main"
 
 self_update() {
   echo "2. Script Updates:"
-#  [ "$UPDATE_GUARD" ] && return
-#  export UPDATE_GUARD=YES
 
   cd "$SCRIPTPATH"
   timeout 1s git fetch --quiet
@@ -65,6 +63,7 @@ packages() {
   if [ " " != "$install_pkgs" ]; then
   echo
   echo "1a. Installing Missing Packages:"
+  echo
   apt --dry-run install $install_pkgs #debug
   #apt install -y $install_pkgs
   fi
@@ -89,14 +88,6 @@ echo "   v$VER by DocDrydenn"
 echo "=========================================="
 echo
 
-# Package Check
-packages
-echo
-self_update
-echo
-
-exit 0
-
 # Check for Usage flag
 if ([ "$1" = "-h" ] || [ "$1" = "h" ]); then
   usage_example
@@ -118,40 +109,46 @@ if [ "$1" -lt 20 ] || [ "$1" -gt 100 ]; then
     exit 1
 fi
 
+# Package Check
+packages
+echo
+self_update
+echo
+
 # Set FanControl & FanSpeed Strings
 FanControl='raw 0x30 0x30 0x01 0x00'
 FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $1 )
 
 # Do it!
+echo "3. Fan Control:
 for keys in "${!ServerNameArray[@]}"
     do
-        echo "Checking for ${ServerNameArray[$keys]}"
+        echo "  Checking for ${ServerNameArray[$keys]}"
 
         if nc -z -w 5 ${ServerIPArray[$keys]} 22 2>/dev/null; then
-            echo " ✓ ${ServerNameArray[$keys]} Found"
+            echo "    ✓ ${ServerNameArray[$keys]} Found"
             echo ""
-            echo " Requesting ${ServerNameArray[$keys]} Fan Control..."
+            echo "    Requesting ${ServerNameArray[$keys]} Fan Control..."
             if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanControl; then
-                echo " ✓ Control Granted"
+                echo "    ✓ Control Granted"
                 echo ""
-                echo " Requesting Fans Set to "$1"%..."
+                echo "    Requesting Fans Set to "$1"%..."
                 if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanSpeed; then
-                    echo " ✓ Fans Set to "$1"%"
+                    echo "    ✓ Fans Set to "$1"%"
                 else
-                    echo " ✗ Setting Fans to "$1"% Failed"
+                    echo "    ✗ Setting Fans to "$1"% Failed"
                 fi
             else
-                echo " ✗ Fan Control Denied"
+                echo "    ✗ Fan Control Denied"
             fi
         else
-            echo " ✗ ${ServerNameArray[$keys]} Not Found"
+            echo "    ✗ ${ServerNameArray[$keys]} Not Found"
         fi
         echo
    done
-
 echo
-echo '======================================='
-echo ' PowerEdge Server Fan Control Complete'
-echo '======================================='
+echo '============================================'
+echo ' Dell PowerEdge R720xd Fan Control Complete'
+echo '============================================'
 echo
 exit 0
