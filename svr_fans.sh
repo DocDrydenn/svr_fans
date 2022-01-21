@@ -81,10 +81,10 @@ usage_example() {
 
 # Execute Script
 clear
-echo '=========================================='
-echo ' Dell PowerEdge R720xd Server Fan Control'
-echo '   v$VER by DocDrydenn'
-echo '=========================================='
+echo "=========================================="
+echo " Dell PowerEdge R720xd Server Fan Control"
+echo "   v$VER by DocDrydenn"
+echo "=========================================="
 echo
 
 # Package Check
