@@ -1,6 +1,9 @@
 #!/bin/bash
 
-# Requires NetCat and IPMITool to be installed.
+VER="1.0"
+
+# Requires Curl, NetCat, and IPMITool.
+declare -a PackagesArray; PackagesArray=('curl' 'netcat' 'ipmitool' 'mt-st')
 
 # Set Server Arrays
 declare -a ServerIPArray; ServerIPArray=('192.168.1.250' '192.168.1.251' '192.168.1.252')
@@ -8,6 +11,52 @@ declare -a ServerNameArray; ServerNameArray=('MasterServer' 'VMServer' 'BackupSe
 declare -a ServerUserArray; ServerUserArray=('root' 'root' 'root')
 declare -a ServerPassArray; ServerPassArray=('14151415' '14151415' '14151415')
 
+SCRIPT="$(readlink -f "$0")"
+SCRIPTFILE="$(basename "$SCRIPT")"             # get name of the file (not full path)
+SCRIPTPATH="$(dirname "$SCRIPT")"
+SCRIPTNAME="$0"
+ARGS=( "$@" )                                  # fixed to make array of args (see below)
+BRANCH="master"
+
+self_update() {
+  cd "$SCRIPTPATH"
+  git fetch
+                                               #https://github.com/DocDrydenn/srv_fans/releases/latest"
+  [ -n "$(git diff --name-only "origin/$BRANCH" "$SCRIPTFILE")" ] && {
+    echo "Found a new version of me, updating myself..."
+    git pull --force
+    git checkout "$BRANCH"
+    git pull --force
+    echo "Running the new version..."
+    cd -                                       # return to original working dir
+    exec "$SCRIPTNAME" "${ARGS[@]}"
+
+    # Now exit this old instance
+    exit 1
+  }
+  echo "Already the latest version."
+}
+
+# Package Check/Install Function
+packages() {
+  echo "Required Packages:"
+  install_pkgs=" "
+  for keys in "${!PackagesArray[@]}"; do
+    REQUIRED_PKG=${PackagesArray[$keys]}
+    PKG_OK=$(dpkg-query -W --showformat='${Status}\n' $REQUIRED_PKG|grep "install ok installed")
+    if [ "" = "$PKG_OK" ]; then
+      echo "Checking for $REQUIRED_PKG: Not Found."
+      install_pkgs+=" $REQUIRED_PKG"
+    else
+      echo "Checking for $REQUIRED_PKG: Found."
+    fi
+  done
+  echo "Installing Missing Packages:"
+  apt --dry-run install $install_pkgs #debug
+  #apt install -y $install_pkgs
+}
+
+# Usage Example Function
 usage_example() {
   echo 'Usage: ./svr_fans.sh <h> ##'
   echo
@@ -18,10 +67,17 @@ usage_example() {
   echo
 }
 
+# Execute Script
 echo '=============================='
 echo ' PowerEdge Server Fan Control'
 echo '=============================='
 echo
+
+# Package Check
+packages
+echo $install_pkgs
+
+exit 0
 
 # Check for Usage flag
 if ([ "$1" = "-h" ] || [ "$1" = "h" ]); then
