@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="1.3"
+VER="1.4"
 
 # Requires Curl, NetCat, and IPMITool.
 declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool' 'mt-st')
@@ -20,22 +20,30 @@ BRANCH="main"
 
 self_update() {
   echo "Checking for Online Updates..."
+  [ "$UPDATE_GUARD" ] && return
+  export UPDATE_GUARD=YES
+
   cd "$SCRIPTPATH"
-  git fetch
-                                               #https://github.com/DocDrydenn/srv_fans/releases/latest"
-  [ -n "$(git diff --name-only "origin/$BRANCH" "$SCRIPTFILE")" ] && {
-    echo "Found a new version of me, updating myself..."
-    git pull --force
-    git checkout "$BRANCH"
-    git pull --force
-    echo "Running the new version..."
-    cd -                                       # return to original working dir
+  timeout 1s git fetch --quiet
+
+  timeout 1s git diff --quiet --exit-code "origin/$BRANCH" "$SCRIPTFILE"
+  [ $? -eq 1 ] && {
+    #echo "Found a new version of me, updating myself..."
+    if [ -n "$(git status --porcelain)" ];  # opposite is -z
+    then
+      git stash push -m 'local changes stashed before self update' --quiet
+    fi
+    git pull --force --quiet
+    git checkout main --quiet
+    git pull --force --quiet
+    #echo "Running the new version..."
+    cd - > /dev/null                        # return to original working dir
     exec "$SCRIPTNAME" "${ARGS[@]}"
 
     # Now exit this old instance
     exit 1
-  }
-  echo "Already the latest version."
+    }
+  #echo "Already the latest version."
 }
 
 # Package Check/Install Function
