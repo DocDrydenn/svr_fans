@@ -11,6 +11,11 @@ declare -a ServerNameArray; ServerNameArray=('MasterServer' 'VMServer' 'BackupSe
 declare -a ServerUserArray; ServerUserArray=('root' 'root' 'root')
 declare -a ServerPassArray; ServerPassArray=('14151415' '14151415' '14151415')
 
+# Set FanControl & FanSpeed Strings
+FanControl='raw 0x30 0x30 0x01 0x00'
+FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $1 )
+
+# Set Script Update Strings
 SCRIPT="$(readlink -f "$0")"
 SCRIPTFILE="$(basename "$SCRIPT")"
 SCRIPTPATH="$(dirname "$SCRIPT")"
@@ -18,12 +23,11 @@ SCRIPTNAME="$0"
 ARGS=( "$@" )
 BRANCH="main"
 
+# Script Update Function
 self_update() {
   echo "2. Script Updates:"
-
   cd "$SCRIPTPATH"
   timeout 1s git fetch --quiet
-
   timeout 1s git diff --quiet --exit-code "origin/$BRANCH" "$SCRIPTFILE"
   [ $? -eq 1 ] && {
     echo "  ✗ Version: Mismatched."
@@ -96,17 +100,17 @@ fi
 
 # Check for valid FanSpeed variable
 case "$1" in
-    ("" | *[!0-9]*)
-        echo 'Invalid FanSpeed Variable.'
-	echo
-	usage_example
-        exit 1
-esac
-if [ "$1" -lt 20 ] || [ "$1" -gt 100 ]; then
-    echo 'FanSpeed Variable Out of Range.'
+  ("" | *[!0-9]*)
+    echo 'Invalid FanSpeed Variable.'
     echo
     usage_example
     exit 1
+esac
+if [ "$1" -lt 20 ] || [ "$1" -gt 100 ]; then
+  echo 'FanSpeed Variable Out of Range.'
+  echo
+  usage_example
+  exit 1
 fi
 
 # Package Check
@@ -121,32 +125,30 @@ FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $1 )
 
 # Do it!
 echo "3. Fan Control:"
-for keys in "${!ServerNameArray[@]}"
-    do
-        echo "  Checking for ${ServerNameArray[$keys]}"
+for keys in "${!ServerNameArray[@]}"; do
+  echo "  Checking for ${ServerNameArray[$keys]}"
+  if nc -z -w 5 ${ServerIPArray[$keys]} 22 2>/dev/null; then
+    echo "    ✓ ${ServerNameArray[$keys]} Found"
+    echo ""
+    echo "    Requesting ${ServerNameArray[$keys]} Fan Control..."
+    if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanControl; then
+      echo "    ✓ Control Granted"
+      echo ""
+      echo "    Requesting Fans Set to "$1"%..."
+      if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanSpeed; then
+        echo "    ✓ Fans Set to "$1"%"
+      else
+        echo "    ✗ Setting Fans to "$1"% Failed"
+      fi
+    else
+      echo "    ✗ Fan Control Denied"
+    fi
+  else
+    echo "    ✗ ${ServerNameArray[$keys]} Not Found"
+  fi
+  echo
+done
 
-        if nc -z -w 5 ${ServerIPArray[$keys]} 22 2>/dev/null; then
-            echo "    ✓ ${ServerNameArray[$keys]} Found"
-            echo ""
-            echo "    Requesting ${ServerNameArray[$keys]} Fan Control..."
-            if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanControl; then
-                echo "    ✓ Control Granted"
-                echo ""
-                echo "    Requesting Fans Set to "$1"%..."
-                if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanSpeed; then
-                    echo "    ✓ Fans Set to "$1"%"
-                else
-                    echo "    ✗ Setting Fans to "$1"% Failed"
-                fi
-            else
-                echo "    ✗ Fan Control Denied"
-            fi
-        else
-            echo "    ✗ ${ServerNameArray[$keys]} Not Found"
-        fi
-        echo
-   done
-echo
 echo '============================================'
 echo ' Dell PowerEdge R720xd Fan Control Complete'
 echo '============================================'
