@@ -3,7 +3,7 @@
 VER="1.9"
 
 # Requires Curl, NetCat, and IPMITool.
-declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool')
+declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool' 'mt-st')
 
 # Set Server Arrays
 declare -a ServerIPArray; ServerIPArray=('192.168.1.250' '192.168.1.251' '192.168.1.252')
@@ -37,7 +37,7 @@ self_update() {
     git pull --force --quiet
     git checkout $BRANCH --quiet
     git pull --force --quiet
-    echo "  ✓ Update Complete. Running New Version..."
+    echo "  ✓ Update Complete. Running New Version. Standby..."
     sleep 3
     cd - > /dev/null                        # return to original working dir
     exec "$SCRIPTNAME" "${ARGS[@]}"
