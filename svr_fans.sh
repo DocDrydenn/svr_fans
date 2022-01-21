@@ -3,7 +3,7 @@
 VER="1.9"
 
 # Requires Curl, NetCat, and IPMITool.
-declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool' 'mt-st')
+declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool')
 
 # Set Server Arrays
 declare -a ServerIPArray; ServerIPArray=('192.168.1.250' '192.168.1.251' '192.168.1.252')
@@ -68,8 +68,8 @@ packages() {
   echo
   echo "1a. Installing Missing Packages:"
   echo
-  apt --dry-run install $install_pkgs #debug
-  #apt install -y $install_pkgs
+  #apt --dry-run install $install_pkgs #debug
+  apt install -y $install_pkgs
   fi
 }
 
