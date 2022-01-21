@@ -34,7 +34,7 @@ self_update() {
       git stash push -m 'local changes stashed before self update' --quiet
     fi
     git pull --force --quiet
-    git checkout main --quiet
+    git checkout $BRANCH --quiet
     git pull --force --quiet
     echo "  ✓ Update Complete. Running New Version..."
     cd - > /dev/null                        # return to original working dir
@@ -60,7 +60,9 @@ packages() {
       echo "  ✓ $REQUIRED_PKG: Found."
     fi
   done
-  echo "Installing Missing Packages:"
+  if [ "" != "$install_pkgs" ]; then
+  echo
+  echo "1a. Installing Missing Packages:"
   apt --dry-run install $install_pkgs #debug
   #apt install -y $install_pkgs
 }
