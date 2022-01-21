@@ -28,7 +28,7 @@ self_update() {
 
   timeout 1s git diff --quiet --exit-code "origin/$BRANCH" "$SCRIPTFILE"
   [ $? -eq 1 ] && {
-    #echo "Found a new version of me, updating myself..."
+    echo "Found a new version of me, updating myself..."
     if [ -n "$(git status --porcelain)" ];  # opposite is -z
     then
       git stash push -m 'local changes stashed before self update' --quiet
@@ -36,14 +36,14 @@ self_update() {
     git pull --force --quiet
     git checkout main --quiet
     git pull --force --quiet
-    #echo "Running the new version..."
+    echo "Running the new version..."
     cd - > /dev/null                        # return to original working dir
     exec "$SCRIPTNAME" "${ARGS[@]}"
 
     # Now exit this old instance
     exit 1
     }
-  #echo "Already the latest version."
+  echo "Already the latest version."
 }
 
 # Package Check/Install Function
