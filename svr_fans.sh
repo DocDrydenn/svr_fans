@@ -20,8 +20,8 @@ BRANCH="main"
 
 self_update() {
   echo "2. Script Updates:"
-  [ "$UPDATE_GUARD" ] && return
-  export UPDATE_GUARD=YES
+#  [ "$UPDATE_GUARD" ] && return
+#  export UPDATE_GUARD=YES
 
   cd "$SCRIPTPATH"
   timeout 1s git fetch --quiet
