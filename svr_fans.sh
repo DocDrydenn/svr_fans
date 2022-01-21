@@ -3,7 +3,7 @@
 VER="1.0"
 
 # Requires Curl, NetCat, and IPMITool.
-declare -a PackagesArray; PackagesArray=('curl' 'netcat' 'ipmitool' 'mt-st')
+declare -a PackagesArray; PackagesArray=('netcat' 'ipmitool' 'mt-st')
 
 # Set Server Arrays
 declare -a ServerIPArray; ServerIPArray=('192.168.1.250' '192.168.1.251' '192.168.1.252')
