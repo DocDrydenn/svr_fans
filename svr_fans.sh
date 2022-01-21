@@ -28,7 +28,8 @@ self_update() {
 
   timeout 1s git diff --quiet --exit-code "origin/$BRANCH" "$SCRIPTFILE"
   [ $? -eq 1 ] && {
-    echo "  ✗ Version: New Version Found."
+    echo "  ✗ Version: Mismatched."
+    echo "2a. Fetching Update:"
     if [ -n "$(git status --porcelain)" ];  # opposite is -z
     then
       git stash push -m 'local changes stashed before self update' --quiet
@@ -43,7 +44,7 @@ self_update() {
     # Now exit this old instance
     exit 1
     }
-  echo "  ✓ Version: No New Version Found."
+  echo "  ✓ Version: Current."
 }
 
 # Package Check/Install Function
