@@ -49,4 +49,5 @@ This script is self-updating. The self-update routine uses git commands to make 
     (Future update will allow individual server fan speeds to be added to the config file... making this easier to do.) 
   
 ## Screenshot:
-![svr_fans](https://user-images.githubusercontent.com/48564375/150644827-ff80fa82-7a61-46c9-87a5-4f2be8e9571b.png)
+![svr_fans](https://user-images.githubusercontent.com/48564375/150647817-9b99cb2d-cdda-42ee-96a7-36352ef674cd.png)
+
