@@ -114,6 +114,7 @@ flags() {
 
 
 echo ${#1} ${#2} ${#3}
+echo $1 $2 $3
 echo $CONF
 echo $SPEED
 
