@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="2.7a"
+VER="2.7b"
 
 # Requires Curl, NetCat, and IPMITool.
 PackagesArray=('netcat' 'ipmitool')
@@ -49,7 +49,7 @@ self_update() {
 
 # Package Check/Install Function
 packages() {
-  echo "1. Requierd Packages:"
+  echo "1. Required Packages:"
   install_pkgs=" "
   for keys in "${!PackagesArray[@]}"; do
     REQUIRED_PKG=${PackagesArray[$keys]}
