@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="2.7"
+VER="2.7a"
 
 # Requires Curl, NetCat, and IPMITool.
 PackagesArray=('netcat' 'ipmitool')
@@ -72,12 +72,12 @@ packages() {
 
 # Usage Example Function
 usage_example() {
-  echo 'Usage: ./svr_fans.sh <h> ## </path/to/config.conf>'
+  echo 'Usage: ./svr_fans.sh <h> ## /full/path/config.conf'
   echo
   echo '    ##          FanSpeed Percentage (Required)'
   echo '                (Number between 20 and 100)'
   echo
-  echo '    file        Config file path and filename'
+  echo '    file        Config file path and name'
   echo
   echo '    -h or h     Show this usage and exit.'
   echo
@@ -128,7 +128,7 @@ flags() {
 
   # Validate CONF file
   if [ ! -f "$CONF" ]; then
-    echo "Invalid CONF."
+    echo "Missing or Invalid CONF."
     echo
     usage_example
   fi
