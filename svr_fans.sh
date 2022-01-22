@@ -99,6 +99,10 @@ flags() {
   ([ "${#2}" < 5 ]) && SPEED=$2
   ([ "${#3}" < 5 ]) && SPEED=$3
 
+echo
+echo $CONF
+echo $SPEED
+
   # Check for valid FanSpeed variable
   case "$SPEED" in
     ("" | *[!0-9]*)
@@ -118,11 +122,6 @@ flags() {
     echo
     usage_example
   fi
-
-echo
-echo $CONF
-echo $SPEED
-
 }
 
 # Execute Script
