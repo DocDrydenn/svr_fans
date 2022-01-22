@@ -113,7 +113,7 @@ flags() {
   fi
 
 
-echo
+echo ${#1} ${#2} ${#3}
 echo $CONF
 echo $SPEED
 
