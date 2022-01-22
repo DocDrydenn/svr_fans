@@ -118,6 +118,11 @@ flags() {
     echo
     usage_example
   fi
+
+echo
+echo $CONF
+echo $SPEED
+
 }
 
 # Execute Script
