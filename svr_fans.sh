@@ -1,15 +1,12 @@
 #!/bin/bash
 
-VER="2.5"
+VER="2.7"
 
 # Requires Curl, NetCat, and IPMITool.
 PackagesArray=('netcat' 'ipmitool')
 
 # Set Server Arrays
-ServerIPArray=()
-ServerNameArray=()
-ServerUserArray=()
-ServerPassArray=()
+ServerIPArray=(); ServerNameArray=(); ServerUserArray=(); ServerPassArray=()
 
 # Set Script Update Strings
 SCRIPT="$(readlink -f "$0")"
@@ -18,6 +15,10 @@ SCRIPTPATH="$(dirname "$SCRIPT")"
 SCRIPTNAME="$0"
 ARGS=( "$@" )
 BRANCH="main"
+USAGE=0
+DEBUG=0
+CONF=""
+SPEED=50
 
 # Script Update Function
 self_update() {
@@ -71,13 +72,52 @@ packages() {
 
 # Usage Example Function
 usage_example() {
-  echo 'Usage: ./svr_fans.sh <h> ##'
+  echo 'Usage: ./svr_fans.sh <h> ## </path/to/config.conf>'
   echo
   echo '    ##          FanSpeed Percentage (Required)'
   echo '                (Number between 20 and 100)'
   echo
+  echo '    file        Config file path and filename'
+  echo
   echo '    -h or h     Show this usage and exit.'
   echo
+  exit 0
+}
+
+# Flag Processing Function
+flags() {
+  # Parse Flags
+  ([ "$1" = "h" ] || [ "$1" = "-h" ]) && usage_example
+  ([ "$2" = "h" ] || [ "$2" = "-h" ]) && usage_example
+  ([ "$3" = "h" ] || [ "$3" = "-h" ]) && usage_example
+
+  ([ ${#1} > 5 ]} && CONF=$1
+  ([ ${#2} > 5 ]} && CONF=$2
+  ([ ${#3} > 5 ]} && CONF=$3
+
+  ([ ${#1} < 5 ]} && SPEED=$1
+  ([ ${#2} < 5 ]} && SPEED=$2
+  ([ ${#3} < 5 ]} && SPEED=$3
+
+  # Check for valid FanSpeed variable
+  case "$SPEED" in
+    ("" | *[!0-9]*)
+      echo 'Invalid FanSpeed Variable.'
+      echo
+      usage_example
+  esac
+  if [ "$SPEED" -lt 20 ] || [ "$SPEED" -gt 100 ]; then
+    echo 'FanSpeed Variable Out of Range.'
+    echo
+    usage_example
+  fi
+
+  # Validate CONF file
+  if [ ! -f "$CONF" ]; then
+    echo "Invalid CONF."
+    echo
+    usage_example
+  fi
 }
 
 # Execute Script
@@ -88,27 +128,8 @@ echo "   v$VER by DocDrydenn"
 echo "=========================================="
 echo
 
-# Check for Usage flag
-if ([ "$1" = "-h" ] || [ "$1" = "h" ]); then
-  usage_example
-  exit 0
-fi
-
-# Check for valid FanSpeed variable
-case "$1" in
-  ("" | *[!0-9]*)
-    echo 'Invalid FanSpeed Variable.'
-    echo
-    usage_example
-    exit 1
-esac
-if [ "$1" -lt 20 ] || [ "$1" -gt 100 ]; then
-  echo 'FanSpeed Variable Out of Range.'
-  echo
-  usage_example
-  exit 1
-fi
-
+# Flag Check
+flags
 # Package Check
 packages
 echo
@@ -120,7 +141,7 @@ echo
 
 # Set FanControl & FanSpeed Strings
 FanControl='raw 0x30 0x30 0x01 0x00'
-FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $1 )
+FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $SPEED )
 
 # Let's Do It!
 echo "3. Fan Control:"
@@ -133,11 +154,11 @@ for keys in "${!ServerNameArray[@]}"; do
     if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanControl; then
       echo "    ✓ Control Granted"
       echo ""
-      echo "    Requesting Fans Set to "$1"%..."
+      echo "    Requesting Fans Set to "$SPEED"%..."
       if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanSpeed; then
-        echo "    ✓ Fans Set to "$1"%"
+        echo "    ✓ Fans Set to "$SPEED"%"
       else
-        echo "    ✗ Setting Fans to "$1"% Failed"
+        echo "    ✗ Setting Fans to "$SPEED"% Failed"
       fi
     else
       echo "    ✗ Fan Control Denied"
