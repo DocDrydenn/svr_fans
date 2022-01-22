@@ -91,9 +91,9 @@ flags() {
   ([ "$2" = "h" ] || [ "$2" = "-h" ]) && usage_example
   ([ "$3" = "h" ] || [ "$3" = "-h" ]) && usage_example
 
-  ([ "${#1}" > 5 ]) && CONF=$1
-  ([ "${#2}" > 5 ]) && CONF=$2
-  ([ "${#3}" > 5 ]) && CONF=$3
+  if ${#1} > 5; then; CONF=$1; fi
+  if ${#2} > 5; then; CONF=$2; fi
+  if ${#3} > 5; then; CONF=$3; fi
 
   ([ "${#1}" < 5 ]) && SPEED=$1
   ([ "${#2}" < 5 ]) && SPEED=$2
