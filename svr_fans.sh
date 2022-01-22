@@ -18,7 +18,7 @@ BRANCH="main"
 USAGE=0
 DEBUG=0
 CONF=""
-SPEED=50
+SPEED=0
 
 # Script Update Function
 self_update() {
@@ -87,6 +87,7 @@ usage_example() {
 # Flag Processing Function
 flags() {
   # Parse Flags
+
   ([ "$1" = "h" ] || [ "$1" = "-h" ]) && usage_example
   ([ "$2" = "h" ] || [ "$2" = "-h" ]) && usage_example
   ([ "$3" = "h" ] || [ "$3" = "-h" ]) && usage_example
@@ -111,12 +112,6 @@ flags() {
   if [ ${#3} -gt 5 ]; then
     CONF=$3
   fi
-
-
-echo ${#1} ${#2} ${#3}
-echo $1 $2 $3
-echo $CONF
-echo $SPEED
 
   # Check for valid FanSpeed variable
   case "$SPEED" in
@@ -148,7 +143,7 @@ echo "=========================================="
 echo
 
 # Flag Check
-flags
+flags $1 $2 $3
 # Package Check
 packages
 echo
@@ -156,7 +151,7 @@ self_update
 echo
 
 # Load Arrays from CONF file
-{ read -a ServerIPArray; read -a ServerNameArray; read -a ServerUserArray; read -a ServerPassArray; } <$SCRIPTPATH/svr_fans.conf
+{ read -a ServerIPArray; read -a ServerNameArray; read -a ServerUserArray; read -a ServerPassArray; } <$CONF #$SCRIPTPATH/svr_fans.conf
 
 # Set FanControl & FanSpeed Strings
 FanControl='raw 0x30 0x30 0x01 0x00'
