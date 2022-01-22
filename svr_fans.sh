@@ -91,19 +91,25 @@ flags() {
   ([ "$2" = "h" ] || [ "$2" = "-h" ]) && usage_example
   ([ "$3" = "h" ] || [ "$3" = "-h" ]) && usage_example
 
-  if [ "${#1}" > 5 ]; then
+  if [ ${#1} -ge 5 ]; then
     CONF=$1
   fi
-  if [ "${#2}" > 5 ]; then
+  if [ ${#2} -ge 5 ]; then
     CONF=$2
   fi
-  if [ "${#3}" > 5 ]; then
+  if [ ${#3} -ge 5 ]; then
     CONF=$3
   fi
 
-  ([ "${#1}" < 5 ]) && SPEED=$1
-  ([ "${#2}" < 5 ]) && SPEED=$2
-  ([ "${#3}" < 5 ]) && SPEED=$3
+  if [ ${#1} -l 5 ]; then
+    SPEED=$1
+  fi
+  if [ ${#2} -l 5 ]; then
+    SPEED=$2
+  fi
+  if [ ${#3} -l 5 ]; then
+    SPEED=$3
+  fi
 
 echo
 echo $CONF
