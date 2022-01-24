@@ -1,8 +1,8 @@
-# svr_fans
+# svr_fans.sh
 
 Simple script to control Dell PowerEdge R720xd server fan speeds via their iDRAC using IPMITool commands.
 
-Script will also work with the Dell PowerEdge R#10-series. (Note: Fanspeed control still works even though an error will be thrown. Just ignore the error.)
+Script will also work with the Dell PowerEdge R#10-series. *(Note: Running this script on those servers will throw an error; just ignore it.)*
 
 ## Requirements:
 This script checks for the below packages. If not found, it will attempt to install them via APT.
@@ -10,14 +10,14 @@ This script checks for the below packages. If not found, it will attempt to inst
 - NetCat
 
 Not checked or installed via script:
-- Git (needed for the install and self-update process to work.)
+- Git *(needed for the install and self-update process to work.)*
 
 ## Install:
 This script is self-updating. The self-update routine uses git commands to make the update.
 
 `git clone https://github.com/DocDrydenn/svr_fans.git`
 
-(Future update will allow the user to skip the self-update function... allowing the script to be "installed" and/or run from outside of a git clone.) 
+*(Future update will allow the user to skip the self-update function... allowing the script to be "installed" and/or run from outside of a git clone.)*
 
 ## Usage:
 ```
@@ -31,23 +31,32 @@ This script is self-updating. The self-update routine uses git commands to make 
     -h or h     Show this usage and exit.
 ```
  ## Config:
+ *Note: Highly recommend putting your config file somewhere outside of the git clone folder. Self-Update will overwrite any changes you make to the example file.*
   
  - Line #1 - IP Address of iDRAC
  - Line #2 - ServerName (This can be whatever you want)
  - Line #3 - iDRAC User Name
  - Line #4 - iDRAC User Password
   
-## Multiple Servers
+### Multiple Servers
   - Option 1 - Each server will be given the same fan speed:
   
     Add additional server info to each line of the config file (seperated by spaces). 
-    (See example in `svr_fans_example.conf`)
+    *(See example in `svr_fans_example.conf`)*
   
   - Option 2 - Each server will be given a different fan speed:
   
     Just use multiple calls to the script using different config files and the desired fan speed.
-    (Future update will allow individual server fan speeds to be added to the config file... making this easier to do.) 
-  
+    *(Future update will allow individual server fan speeds to be added to the config file... making this easier to do.)*
+
+### Example Config (2 Servers)
+```
+192.168.1.100 192.168.1.101
+Server1 Server2
+root root
+12345 12345
+```
+
 ## Screenshot:
 ![svr_fans](https://user-images.githubusercontent.com/48564375/150647817-9b99cb2d-cdda-42ee-96a7-36352ef674cd.png)
 
