@@ -21,14 +21,15 @@ This script is self-updating. The self-update routine uses git commands to make 
 
 ## Usage:
 ```
-./svr_fans.sh <h> ## /full/path/config.conf
+./svr_fans.sh <h> <##> /full/path/config.conf
 
-    ##          FanSpeed Percentage (Required)
-                (Number between 20 and 100)
+    ##              Global FanSpeed Percentage (Optional)
+                    (Number between 20 and 100)
+                    (This will over-ride any speeds set in CONF)'
 
-    file        Config file path and name
+    /path/file.ext  Config file path and name
 
-    -h or h     Show this usage and exit.
+    -h or h         Show this usage and exit.
 ```
  ## Config:
  *Note: Highly recommend putting your config file somewhere outside of the git clone folder. Self-Update will overwrite any changes you make to the example file.*
@@ -37,24 +38,15 @@ This script is self-updating. The self-update routine uses git commands to make 
  - Line #2 - ServerName (This can be whatever you want)
  - Line #3 - iDRAC User Name
  - Line #4 - iDRAC User Password
+ - Line #5 - FanSpeed Percentage
   
-### Multiple Servers
-  - Option 1 - Each server will be given the same fan speed:
-  
-    Add additional server info to each line of the config file (seperated by spaces). 
-    *(See example in `svr_fans_example.conf`)*
-  
-  - Option 2 - Each server will be given a different fan speed:
-  
-    Just use multiple calls to the script using different config files and the desired fan speed.
-    *(Future update will allow individual server fan speeds to be added to the config file... making this easier to do.)*
-
 ### Example Config (2 Servers)
 ```
 192.168.1.100 192.168.1.101
 Server1 Server2
 root root
 12345 12345
+50 50
 ```
 
 ## Screenshot:
