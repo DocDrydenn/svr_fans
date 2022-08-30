@@ -1,12 +1,12 @@
 #!/bin/bash
 
-VER="2.7b"
+VER="2.9"
 
 # Requires Curl, NetCat, and IPMITool.
 PackagesArray=('netcat' 'ipmitool')
 
 # Set Server Arrays
-ServerIPArray=(); ServerNameArray=(); ServerUserArray=(); ServerPassArray=()
+ServerIPArray=(); ServerNameArray=(); ServerUserArray=(); ServerPassArray=(); ServerFanspeedArray=()
 
 # Set Script Update Strings
 SCRIPT="$(readlink -f "$0")"
@@ -19,6 +19,7 @@ USAGE=0
 DEBUG=0
 CONF=""
 SPEED=0
+USESPEEDARRAY=0
 
 # Script Update Function
 self_update() {
@@ -72,66 +73,81 @@ packages() {
 
 # Usage Example Function
 usage_example() {
-  echo 'Usage: ./svr_fans.sh <h> ## /full/path/config.conf'
+  echo 'Usage: ./svr_fans.sh <h> <##> /full/path/config.conf'
   echo
-  echo '    ##          FanSpeed Percentage (Required)'
-  echo '                (Number between 20 and 100)'
+  echo '    ##                Global FanSpeed Percentage (Optional)'
+  echo '                      (Number between 20 and 100)'
+  echo '                  (This will over-ride any speeds set in CONF)'
   echo
-  echo '    file        Config file path and name'
+  echo '    /path/file.ext    Config file path and name'
   echo
-  echo '    -h or h     Show this usage and exit.'
+  echo '    -h or h           Show this usage and exit.'
   echo
   exit 0
 }
 
 # Flag Processing Function
 flags() {
-  # Parse Flags
 
-  ([ "$1" = "h" ] || [ "$1" = "-h" ]) && usage_example
-  ([ "$2" = "h" ] || [ "$2" = "-h" ]) && usage_example
-  ([ "$3" = "h" ] || [ "$3" = "-h" ]) && usage_example
+  # Check for HELP argument
+    ([ "$1" = "h" ] || [ "$1" = "-h" ]) && usage_example
+    ([ "$2" = "h" ] || [ "$2" = "-h" ]) && usage_example
+    ([ "$3" = "h" ] || [ "$3" = "-h" ]) && usage_example
 
-
-  if [ ${#1} -gt 0 ] && [ ${#1} -lt 5 ]; then
-    SPEED=$1
-  fi
-  if [ ${#2} -gt 0 ] && [ ${#2} -lt 5 ]; then
-    SPEED=$2
-  fi
-  if [ ${#3} -gt 0 ] && [ ${#3} -lt 5 ]; then
-    SPEED=$3
-  fi
-
-  if [ ${#1} -gt 5 ]; then
+  echo "Validating CONF..."
+  # Check for CONF argument
+  if [[ -f ${1} ]]; then
     CONF=$1
-  fi
-  if [ ${#2} -gt 5 ]; then
+  elif [[ -f ${2} ]]; then
     CONF=$2
-  fi
-  if [ ${#3} -gt 5 ]; then
+  elif [[ -f ${3} ]]; then
     CONF=$3
+  else
+    echo "  Missing or Invalid CONF."
+    echo
+    usage_example
   fi
+  
+  # Load Arrays from CONF file
+  { read -a ServerIPArray; read -a ServerNameArray; read -a ServerUserArray; read -a ServerPassArray; read -a ServerFanspeedArray; } <$CONF #$SCRIPTPATH/svr_fans.conf
 
-  # Check for valid FanSpeed variable
-  case "$SPEED" in
-    ("" | *[!0-9]*)
-      echo 'Invalid FanSpeed Variable.'
+  # Check for equal array element counts (skip FanspeedArray)
+  if ! [[ "${#ServerIPArray[@]}|${#ServerNameArray[@]}|${#ServerUserArray[@]}|${#ServerPassArray[@]}" = "${#ServerIPArray[@]}|${#ServerIPArray[@]}|${#ServerIPArray[@]}|${#ServerIPArray[@]}" ]]; then
+    echo "  CONF contents are Invalid."
+    echo
+    usage_example
+  fi
+  echo "  CONF appears valid."
+
+echo "Validating Fan Speed(s)..."
+  # Check for SPEED argument
+  if [[ $1 =~ ^[0-9]+$ ]]; then
+    SPEED=$1
+  elif [[ $2 =~ ^[0-9]+$ ]]; then
+    SPEED=$2
+  elif [[ $3 =~ ^[0-9]+$ ]]; then
+    SPEED=$3
+  elif [[ ${#ServerFanspeedArray[@]} -gt 0 ]]; then
+    USESPEEDARRAY=1
+  else
+    echo "  Missing or Invalid Fan Speed."
+    echo
+    usage_example
+  fi 
+  # Check for SPEED argument range
+  if [ "$USESPEEDARRAY" -eq 0 ]; then
+    if [ "$SPEED" -lt 20 ] || [ "$SPEED" -gt 100 ]; then
+      echo '  Fan Speed Variable Out of Range.'
       echo
       usage_example
-  esac
-  if [ "$SPEED" -lt 20 ] || [ "$SPEED" -gt 100 ]; then
-    echo 'FanSpeed Variable Out of Range.'
-    echo
-    usage_example
+    fi
   fi
-
-  # Validate CONF file
-  if [ ! -f "$CONF" ]; then
-    echo "Missing or Invalid CONF."
-    echo
-    usage_example
+  if [ "$USESPEEDARRAY" -eq 1 ]; then
+    echo "  CONF Fan Speeds appears valid."
+  else
+    echo "  Global Over-ride Fan Speed appears valid."
   fi
+  echo
 }
 
 # Execute Script
@@ -144,18 +160,15 @@ echo
 
 # Flag Check
 flags $1 $2 $3
+
 # Package Check
-packages
+packages #Uncomment for Production
 echo
-self_update
+self_update #Uncomment for Production
 echo
 
-# Load Arrays from CONF file
-{ read -a ServerIPArray; read -a ServerNameArray; read -a ServerUserArray; read -a ServerPassArray; } <$CONF #$SCRIPTPATH/svr_fans.conf
-
-# Set FanControl & FanSpeed Strings
+# Set FanControl String
 FanControl='raw 0x30 0x30 0x01 0x00'
-FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $SPEED )
 
 # Let's Do It!
 echo "3. Fan Control:"
@@ -168,6 +181,10 @@ for keys in "${!ServerNameArray[@]}"; do
     if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanControl; then
       echo "    ✓ Control Granted"
       echo ""
+      if [ "$USESPEEDARRAY" -eq 1 ]; then
+        SPEED=${ServerFanspeedArray[$keys]}
+      fi
+      FanSpeed='raw 0x30 0x30 0x02 0xff 0x'$( printf '%x\n' $SPEED )
       echo "    Requesting Fans Set to "$SPEED"%..."
       if ipmitool -I lanplus -H ${ServerIPArray[$keys]} -U ${ServerUserArray[$keys]} -P ${ServerPassArray[$keys]} $FanSpeed; then
         echo "    ✓ Fans Set to "$SPEED"%"
